@@ -134,7 +134,7 @@ bool Checker(string data)
 // но записываться в том виде, в котором был послан.
 void Logging(string data)
 {
-	ofstream logFd("cppstudio.txt", ios_base::app);
+	ofstream logFd("logfile.txt", ios_base::app);
 	if (!logFd.is_open())
 	{
 		cerr << "Open file error" << endl;
