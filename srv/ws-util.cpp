@@ -112,22 +112,6 @@ bool ShutdownConnection(SOCKET sd)
         return false;
     }
 
-    char acReadBuffer[kBufferSize];
-    while (1) {
-        int nNewBytes = recv(sd, acReadBuffer, kBufferSize, 0);
-        if (nNewBytes == SOCKET_ERROR) {
-            return false;
-        }
-        else if (nNewBytes != 0) {
-            cerr << endl << "FYI, received " << nNewBytes <<
-                    " unexpected bytes during shutdown." << endl;
-        }
-        else {
-            break;
-        }
-    }
-
-    // Close the socket.
     if (closesocket(sd) == SOCKET_ERROR) {
         return false;
     }

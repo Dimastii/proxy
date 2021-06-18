@@ -22,8 +22,8 @@ enum State
 {
 	READ_FROM_CLIENT,
 	READ_FROM_DB,
-	SEND_FROM_CLIENT,
-	SEND_FROM_DB,
+	SEND_TO_CLIENT,
+	SEND_TO_DB,
 };
 
 struct Connection {
@@ -115,7 +115,7 @@ bool ReadDataFromDb(Connection& conn)
 			" was closed by the client. Shutting down." << endl;
 		return false;
 	}
-	(conn).state = SEND_FROM_CLIENT;
+	(conn).state = SEND_TO_CLIENT;
 	return true;
 }
 // Функция проверки полученой строки на содержание в ней запроса.
@@ -165,7 +165,7 @@ bool ReadDataFromClient(Connection& conn)
 	data = conn.acBuffer + 5;
 	if (data.size() != 0)
 		Logging(data);
-	(conn).state = SEND_FROM_DB;
+	(conn).state = SEND_TO_DB;
 
 	return true;
 }
@@ -173,7 +173,7 @@ bool ReadDataFromClient(Connection& conn)
 
 //// WriteData /////////////////////////////////////////////////////////
 // Блок отправки данных клиенту и базе данных.
-bool WriteDataFromDb(Connection& conn)
+bool WriteDataToDb(Connection& conn)
 {
 	int nBytes = send(conn.sockDb, conn.acBuffer, conn.nBytesRead, 0);
 	if (nBytes == SOCKET_ERROR) {
@@ -189,7 +189,7 @@ bool WriteDataFromDb(Connection& conn)
 }
 
 
-bool WriteDataFromClient(Connection& conn) 
+bool WriteDataToClient(Connection& conn) 
 {
 	int nBytes = send(conn.sd, conn.acBuffer, conn.nBytesRead, 0);
 	if (nBytes == SOCKET_ERROR) {
@@ -235,16 +235,16 @@ void SetupFDSets(fd_set& ReadFDs, fd_set& WriteFDs,
 			(*it).fcnPtr = ReadDataFromDb;
 			break;
 		}
-		case SEND_FROM_CLIENT:
+		case SEND_TO_CLIENT:
 		{
 			FD_SET(it->sd, &WriteFDs);
-			(*it).fcnPtr = WriteDataFromClient;
+			(*it).fcnPtr = WriteDataToClient;
 			break;
 		}
-		case SEND_FROM_DB:
+		case SEND_TO_DB:
 		{
 			FD_SET(it->sockDb, &WriteFDs);
-			(*it).fcnPtr = WriteDataFromDb;
+			(*it).fcnPtr = WriteDataToDb;
 			break;
 		}
 		default:
